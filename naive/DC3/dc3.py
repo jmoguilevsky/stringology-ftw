@@ -1,11 +1,10 @@
-# encoding=ascii
-
-def tobi_radix_pass(a, b, s, offset, K):
+def radix_pass(a, b, s, offset, N, K):
     c = [0] * (K+1)
 
     # count occurrences
-    for i in a:
-        c[s[i + offset]] += 1
+    for i in range(N):
+        aux = s[a[i] + offset]
+        c[aux] += 1
 
     # exclusive prefix sums
     accum = 0
@@ -15,16 +14,16 @@ def tobi_radix_pass(a, b, s, offset, K):
         accum += t
 
     # sort
-    for i in a:
-        b[c[s[i + offset]]] = i
-        c[s[i + offset]] += 1
+    for i in range(N):
+        b[c[s[a[i] + offset]]] = i
+        c[s[a[i] + offset]] += 1
 
 
-def tobi_suffix_array(s, SA, K):
-    n    = len(s)
-    n0   = (n + 2) // 3
-    n1   = (n + 1) // 3
-    n2   = n // 3
+def suffix_array(s, SA, N, K):
+    print('CALLED WITH s', s)
+    n0   = (N + 2) // 3
+    n1   = (N + 1) // 3
+    n2   = N // 3
     n02  = n0 + n2
     s12  = [0] * (n02 + 3)
     SA12 = [0] * (n02 + 3)
@@ -33,15 +32,15 @@ def tobi_suffix_array(s, SA, K):
 
     # generate position of mod 1 and mod 2 suffixes
     j = 0
-    for i in range(n + (n0 - n1)):
+    for i in range(N + (n0 - n1)):
         if i%3 != 0:
             s12[j] = i
             j += 1
 
     # lsb radix sort the mod 1 and mod 2 triples
-    tobi_radix_pass(s12, SA12, s, 2, K)
-    tobi_radix_pass(SA12, s12, s, 1, K)
-    tobi_radix_pass(s12, SA12, s, 0, K)
+    radix_pass(s12, SA12, s, 2, n02, K)
+    radix_pass(SA12, s12, s, 1, n02, K)
+    radix_pass(s12, SA12, s, 0, n02, K)
 
     # find lexicographic names of triples
     name = 0
@@ -63,7 +62,7 @@ def tobi_suffix_array(s, SA, K):
 
     # recurse if names are not yet unique
     if name < n02:
-        tobi_suffix_array(s12, SA12, name)
+        suffix_array(s12, SA12, n02, name)
         # store unique names in s12 using the suffix array
         for i in range(n02):
             s12[SA12[i]] = i + 1
@@ -77,16 +76,24 @@ def tobi_suffix_array(s, SA, K):
     for i in range(n02):
         if SA12[i] < n0:
             s0[j] = 3 * SA12[i]
-        tobi_radix_pass(s0, SA0, s, 0, K)
+        radix_pass(s0, SA0, s, 0, n0, K)
 
     # merge sorted SA0 suffixes and sorted SA12 suffixes
     p = 0
     t = n0 - n1
-    for k in range(n):
+    for k in range(N):
         def get_i():
             return SA12[t] * 3 + 1 if SA12[t] < n0 else (SA12[t] - n0) * 3 + 2
 
         i = get_i() # pos of current offset 12 suffix
+
+        if p >= len(SA0): #debug
+            print('p', p)
+            print('len(SA0)', len(SA0))
+            print('SA0', SA0)
+            print('N', N)
+            print('s', s)
+            print('K', K)
         j = SA0[p] # pos of current offset 0 suffix
 
         # check which suffix is smaller
@@ -145,8 +152,8 @@ def naively_suffix_array(source):
 
 if __name__ == '__main__':
     cases = [
-        'BANANA',
         'YABBADABBADO',
+        'BANANA',
         'TDA'
     ]
 
@@ -156,10 +163,11 @@ if __name__ == '__main__':
         alphabet = sorted(list(set(test)))
         c_to_i = { char: pos for pos, char in enumerate(alphabet, 1)}
         K  = len(alphabet)
-        s  = [c_to_i[c] for c in test]
+        N  = len(test)
+        s  = [c_to_i[c] for c in test] + [0, 0, 0]
         SA = [0 for _ in s]
 
         naive_sa = naively_suffix_array(test)
-        tobi_suffix_array(s, SA, K)
+        suffix_array(s, SA, N, K)
         print('??' if s == SA else '?', s, SA)
         print()
