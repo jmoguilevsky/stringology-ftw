@@ -151,12 +151,15 @@ if __name__ == '__main__':
     ]
 
     for test in cases:
-        K  = 91 # maximum ord of big letters (alphabet size)
-        s  = [int(ord(c)) + 1 for c in test] + [0, 0, 0]
+        print()
+        print(test)
+        alphabet = sorted(list(set(test)))
+        c_to_i = { char: pos for pos, char in enumerate(alphabet, 1)}
+        K  = len(alphabet)
+        s  = [c_to_i[c] for c in test]
         SA = [0 for _ in s]
 
         naive_sa = naively_suffix_array(test)
         tobi_suffix_array(s, SA, K)
-        print()
         print('??' if s == SA else '?', s, SA)
         print()
