@@ -3,8 +3,8 @@ def radix_pass(a, b, s, offset, N, K):
 
     # count occurrences
     for i in range(N):
-        aux = s[a[i] + offset]
-        c[aux] += 1
+        rai = s[a[i] + offset]
+        c[rai] += 1
 
     # exclusive prefix sums
     accum = 0
@@ -15,8 +15,9 @@ def radix_pass(a, b, s, offset, N, K):
 
     # sort
     for i in range(N):
-        b[c[s[a[i] + offset]]] = i
-        c[s[a[i] + offset]] += 1
+        rai = s[a[i] + offset]
+        b[c[rai]] = a[i]
+        c[rai] += 1
 
 
 def suffix_array(s, SA, N, K):
@@ -76,6 +77,7 @@ def suffix_array(s, SA, N, K):
     for i in range(n02):
         if SA12[i] < n0:
             s0[j] = 3 * SA12[i]
+            j += 1
         radix_pass(s0, SA0, s, 0, n0, K)
 
     # merge sorted SA0 suffixes and sorted SA12 suffixes
@@ -152,9 +154,9 @@ def naively_suffix_array(source):
 
 if __name__ == '__main__':
     cases = [
-        'YABBADABBADO',
+        'TDA',
         'BANANA',
-        'TDA'
+        'YABBADABBADO'
     ]
 
     for test in cases:
@@ -165,7 +167,7 @@ if __name__ == '__main__':
         K  = len(alphabet)
         N  = len(test)
         s  = [c_to_i[c] for c in test] + [0, 0, 0]
-        SA = [0 for _ in s]
+        SA = [0 for _ in test]
 
         naive_sa = naively_suffix_array(test)
         suffix_array(s, SA, N, K)
