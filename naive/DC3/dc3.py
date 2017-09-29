@@ -22,9 +22,9 @@ def tobi_radix_pass(a, b, s, offset, K):
 
 def tobi_suffix_array(s, SA, K):
     n    = len(s)
-    n0   = (n + 2) / 3
-    n1   = (n + 1) / 3
-    n2   = n / 3
+    n0   = (n + 2) // 3
+    n1   = (n + 1) // 3
+    n2   = n // 3
     n02  = n0 + n2
     s12  = [0] * (n02 + 3)
     SA12 = [0] * (n02 + 3)
@@ -56,10 +56,10 @@ def tobi_suffix_array(s, SA, K):
             c2 = s[SA12[i] + 2]
         if SA12[i] % 3 == 1:
             # ;eft half
-            s12[SA12[i] / 3] = name
+            s12[SA12[i] // 3] = name
         else:
             # right half
-            s12[SA12[i] / 3 + n0] = name
+            s12[SA12[i] // 3 + n0] = name
 
     # recurse if names are not yet unique
     if name < n02:
@@ -94,7 +94,7 @@ def tobi_suffix_array(s, SA, K):
         second_a = 0 if cond else s[i + 1]
         second_b = 0 if cond else s[j + 1]
         third_a  = s12[SA12[t] + n0] if cond else s12[SA12[t] - n0 + 1]
-        third_b  = s12[j / 3]        if cond else s12[j/3 + n0]
+        third_b  = s12[j // 3]       if cond else s12[j//3 + n0]
         is_suffix_from_SA12_smaller = \
             (s[i], second_a, third_a) <= (s[j], second_b, third_b)
 
