@@ -1,2 +1,2 @@
 # stringology-ftw
-Stringology FTW, UKK, DC3 (By TL), and a naive for the common people
+Stringology FTW, DC3, Burrows–Wheeler transform, and a naive for the common people
