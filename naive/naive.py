@@ -39,6 +39,7 @@ def test():
     print(naiveFind('hla', 'holaComoTeVa'))
     print(naiveFind('hola', 'ComoholaTeVa'))
     print(naivelyMakeSuffixArray('banana'))
+    print(naivelyMakeSuffixArray('yabbadabbado'))
 
 if __name__ == '__main__':
     test()

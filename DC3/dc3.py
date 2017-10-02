@@ -31,18 +31,25 @@ def radix_pass(triplet_indexes, b, s, offset, N, K):
         bucket_starting_positions[alphabet_letter] += 1 #increase
 
 
+# lsb radix sort the mod 1 and mod 2 triples (may have empates)
+def radix_sort_triplets_with_ties(s12, s, n02, K):
+    sorted_triplets = [0] * (n02 + 3)
+    radix_pass(s12, sorted_triplets, s, 2, n02, K)
+    radix_pass(sorted_triplets, s12, s, 1, n02, K) #reuse memory
+    radix_pass(s12, sorted_triplets, s, 0, n02, K) #reuse memory
+    return sorted_triplets
+
+
 def suffix_array(s, SA, N, K):
-    print('CALLED WITH s', s)
+    # print('CALLED WITH s', s)
     n0 = (N + 2) // 3
     n1 = (N + 1) // 3
     n2 = N // 3
     n02 = n0 + n2
     s12 = [0] * (n02 + 3)
-    SA12 = [0] * (n02 + 3)
-    s0 = [0] * n0
-    SA0 = [0] * n0
 
     # generate position of mod 1 and mod 2 suffixes
+    # the "+(n0-n1)" adds a dummy mod 1 suffix if n%3 == 1
     j = 0
     for i in range(N + (n0 - n1)):
         if i % 3 != 0:
@@ -50,73 +57,99 @@ def suffix_array(s, SA, N, K):
             j += 1
 
     # lsb radix sort the mod 1 and mod 2 triples
-    radix_pass(s12, SA12, s, 2, n02, K)
-    radix_pass(SA12, s12, s, 1, n02, K)
-    radix_pass(s12, SA12, s, 0, n02, K)
+    # s12 is now in inconsistent state
+    sorted_triplets = radix_sort_triplets_with_ties(s12, s, n02, K)
 
-    # find lexicographic names of triples
-    name = 0
-    c0 = -1
-    c1 = -1
-    c2 = -1
+    # print('sorted_triplets', sorted_triplets, 'n0', n0)
+
+    rankings = [0] * (n02 + 3)
+    # find lexicographic rankings of triples
+    ranking = 0
+    previous_triplet = (-1, -1, -1)
     for i in range(n02):
-        if s[SA12[i] + 0] != c0 or s[SA12[i] + 1] != c1 or s[SA12[i] + 2] != c2:
-            name += 1
-            c0 = s[SA12[i] + 0]
-            c1 = s[SA12[i] + 1]
-            c2 = s[SA12[i] + 2]
-        if SA12[i] % 3 == 1:
-            # ;eft half
-            s12[SA12[i] // 3] = name
+        pos = sorted_triplets[i]
+        new_triplet = s[pos:pos+3]
+        if new_triplet != previous_triplet:
+            ranking += 1
+            previous_triplet = new_triplet
+ 
+        if sorted_triplets[i] % 3 == 1:
+            # left half
+            rankings[sorted_triplets[i] // 3] = ranking
         else:
             # right half
-            s12[SA12[i] // 3 + n0] = name
+            rankings[sorted_triplets[i] // 3 + n0] = ranking
 
-    # recurse if names are not yet unique
-    if name < n02:
-        suffix_array(s12, SA12, n02, name)
-        # store unique names in s12 using the suffix array
+    SA12 = [0] * (n02 + 3)
+
+    # recurse if rankings are not yet unique
+    if ranking < n02:
+        #ranking is the new  alphabet size since each triplet is new letter
+        suffix_array(rankings, SA12, n02, ranking)
+        # store unique ranking in rankings using the suffix array
         for i in range(n02):
-            s12[SA12[i]] = i + 1
+            rankings[SA12[i]] = i + 1
     else:
-        # generate the suffix array of s12 directly
+        # generate the suffix array of rankings directly
+        # for banana this is [3, 0, 1, 2] while the real SA would be [3, 1, 0, 2]
         for i in range(n02):
-            SA12[s12[i] - 1] = i
+            SA12[rankings[i] - 1] = i
+    # print('SA12', SA12)
 
-    # stably sort the mod 0 suffixes from SA12 by their first character
+    s0 = [0] * n0
+    SA0 = [0] * n0
+    # Generate array of positions of mod0 triplets 
+    # lsb radix sorted by second and third characters
+    # this is because we already know how to sort suffixes which are mod1 or mod2
     j = 0
     for i in range(n02):
         if SA12[i] < n0:
             s0[j] = 3 * SA12[i]
             j += 1
-        radix_pass(s0, SA0, s, 0, n0, K)
+
+    # stably sort the mod 0 suffixes from SA12 by their first character
+    # since we know how to sort mod1 and mod2, 
+    # i only need to sort the last character 
+    # of the triplet (always remember it's lsb)
+    radix_pass(s0, SA0, s, 0, n0, K)
 
     # merge sorted SA0 suffixes and sorted SA12 suffixes
     p = 0
-    t = n0 - n1
-    for k in range(N):
+    t = n0 - n1 # = 0 or 1
+    k = 0
+    while k < N:
         def get_i():
+            # SA12[t] < n0 says if it's lefthalf or righthalf
+            # +1 is lefthand  since they are mod1
+            # +2 is righthand since they are mod2
+            # SA12[0/1] * 3 + 1 or (SA12[0/1] - n0) * 3 + 2
             return SA12[t] * 3 + 1 if SA12[t] < n0 else (SA12[t] - n0) * 3 + 2
 
         i = get_i()  # pos of current offset 12 suffix
 
-        if p >= len(SA0):  # debug
+        """ if p >= len(SA0):  # debug
             print('p', p)
             print('len(SA0)', len(SA0))
             print('SA0', SA0)
             print('N', N)
             print('s', s)
             print('K', K)
+            """
+            
+        
+        
         j = SA0[p]  # pos of current offset 0 suffix
 
         # check which suffix is smaller
-        cond = SA12[t] < n0
-        second_a = 0 if cond else s[i + 1]
-        second_b = 0 if cond else s[j + 1]
-        third_a = s12[SA12[t] + n0] if cond else s12[SA12[t] - n0 + 1]
-        third_b = s12[j // 3] if cond else s12[j // 3 + n0]
+        is_mod_1 = SA12[t] < n0
+        
+        # lefthand of <= operator
+        second_char_lhand = 0 if is_mod_1 else s[i + 1]
+        second_char_rhand = 0 if is_mod_1 else s[j + 1]
+        third_char_lhand = rankings[SA12[t] + n0] if is_mod_1 else rankings[SA12[t] - n0 + 1]
+        third_char_rhand = rankings[j // 3] if is_mod_1 else rankings[j // 3 + n0]
         is_suffix_from_SA12_smaller = \
-            (s[i], second_a, third_a) <= (s[j], second_b, third_b)
+            (s[i], second_char_lhand, third_char_lhand) <= (s[j], second_char_rhand, third_char_rhand)
 
         # merge step
         if is_suffix_from_SA12_smaller:
@@ -137,6 +170,11 @@ def suffix_array(s, SA, N, K):
                     SA[k] = get_i()
                     t += 1
                     k += 1
+        k += 1
+        # print(SA)
+        # print(p)
+        # print(t)
+        # print(k)
 
 
 def naively_suffix_array(source):
@@ -179,7 +217,7 @@ if __name__ == '__main__':
         s = [c_to_i[c] for c in test] + [0, 0, 0]
         SA = [0 for _ in test]
 
-        naive_sa = naively_suffix_array(test)
+        naive_sa = naively_suffix_array(test)[1:]
         suffix_array(s, SA, N, K)
-        print('??' if s == SA else '?', s, SA)
+        print('✅' if naive_sa == SA else '❌', naive_sa, SA)
         print()
