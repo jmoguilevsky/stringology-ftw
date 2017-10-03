@@ -1,3 +1,7 @@
+from timeit import timeit
+from os import listdir
+from os.path import isfile, join, getsize
+
 def radix_pass(triplet_indexes, b, s, offset, N, K):
     bucket_sizes = [0] * (K + 1)
     bucket_starting_positions = [0] * (K + 1)
@@ -40,7 +44,7 @@ def radix_sort_triplets_with_ties(s12, s, n02, K):
     return sorted_triplets
 
 
-def suffix_array(s, SA, N, K):
+def generate_suffix_array(s, SA, N, K):
     # print('CALLED WITH s', s)
     n0 = (N + 2) // 3
     n1 = (N + 1) // 3
@@ -85,7 +89,7 @@ def suffix_array(s, SA, N, K):
     # recurse if rankings are not yet unique
     if ranking < n02:
         #ranking is the new  alphabet size since each triplet is new letter
-        suffix_array(rankings, SA12, n02, ranking)
+        generate_suffix_array(rankings, SA12, n02, ranking)
         # store unique ranking in rankings using the suffix array
         for i in range(n02):
             rankings[SA12[i]] = i + 1
@@ -199,25 +203,64 @@ def naively_suffix_array(source):
 
     return suffixArray
 
+def suffix_array(text):
+    alphabet = sorted(list(set(text)))
+    c_to_i = {char: pos for pos, char in enumerate(alphabet, 1)}
+    K = len(alphabet)
+    N = len(text)
+    s = [c_to_i[c] for c in text] + [0, 0, 0]
+    SA = [0 for _ in text]
+    generate_suffix_array(s, SA, N, K)
+    return SA
+    
+
 
 if __name__ == '__main__':
     cases = [
+        'AS',
         'TDA',
         'BANANA',
-        'YABBADABBADO'
+        'YABBADABBADO',
+        'YABBADABB'
     ]
+    testFiles = True
 
     for test in cases:
         print()
-        print(test)
-        alphabet = sorted(list(set(test)))
-        c_to_i = {char: pos for pos, char in enumerate(alphabet, 1)}
-        K = len(alphabet)
-        N = len(test)
-        s = [c_to_i[c] for c in test] + [0, 0, 0]
-        SA = [0 for _ in test]
+        print(test)  
 
         naive_sa = naively_suffix_array(test)[1:]
-        suffix_array(s, SA, N, K)
+        SA = suffix_array(test)
         print('✅' if naive_sa == SA else '❌', naive_sa, SA)
         print()
+    if (testFiles):
+        path = '../texts'
+        files = [f for f in listdir(path) if isfile(join(path, f))]
+        filesToPrint = []
+        for file in files:
+            if (file != '.DS_Store'):
+                path = '../texts/' + file
+                size = getsize(path)
+                f = open(path,'r')
+                text = f.read()
+                f.close()
+                def local():
+                    SA = suffix_array(text)
+                num = 1
+                time = timeit(local, number=num) 
+                filesToPrint.append([file, str(size), time / num])
+                # print(file, size, time / num)
+        maxNameLength = len(max(filesToPrint, key=lambda x: len(x[0]))[0])
+        maxSizeLength = len(max(filesToPrint, key=lambda x: len(x[1]))[1])
+        for file in filesToPrint:
+            charsToAdd1 = maxNameLength - len(file[0])
+            charsToAdd2 = maxSizeLength - len(file[0])
+            print(file[0] + ' ' * charsToAdd1, file[1] + ' ' * charsToAdd2, file[2])
+        f = open('../texts/bible.txt','r')
+        text = f.read()
+        f.close()
+        def local2():
+            SA = naively_suffix_array(text)
+        time = timeit(local2, number=1) 
+        print('bible naive', time)
+        
