@@ -37,7 +37,7 @@ def recursiveSearch(s, SA, pattern, startingPos, endingPos, leftSide, textLength
 
 def findAllOccurrences(s, SA, pattern):
     if (pattern == ''):
-        return []
+        return 0, 0
     textLength = len(s)
     patternLength = len(pattern)
     starting = 0
@@ -55,13 +55,13 @@ def findAllOccurrences(s, SA, pattern):
             rightSide = midpoint + \
                 recursiveSearch(s, SA, pattern, midpoint + 1, textLength - 1, False, textLength, patternLength) + 1
             # print('leftSide', leftSide)
-            return SA[leftSide: rightSide]
+            return leftSide, rightSide
         elif (comp > 0):
             ending = midpoint - 1
         else:
             starting = midpoint + 1
 
-    return []
+    return 0, 0
 
 
 def main():

@@ -2,6 +2,7 @@ from timeit import timeit
 from os import listdir
 from os.path import isfile, join, getsize
 
+
 def radix_pass(triplet_indexes, b, s, offset, N, K):
     bucket_sizes = [0] * (K + 1)
     bucket_starting_positions = [0] * (K + 1)
@@ -30,17 +31,17 @@ def radix_pass(triplet_indexes, b, s, offset, N, K):
     # inserts each string in the starting position for the bucket
     # once it inserts a string, the starting position is increased
     for i in range(N):
-        alphabet_letter = s[triplet_indexes[i] + offset] #lookup
-        b[bucket_starting_positions[alphabet_letter]] = triplet_indexes[i] #insert
-        bucket_starting_positions[alphabet_letter] += 1 #increase
+        alphabet_letter = s[triplet_indexes[i] + offset]  # lookup
+        b[bucket_starting_positions[alphabet_letter]] = triplet_indexes[i]  # insert
+        bucket_starting_positions[alphabet_letter] += 1  # increase
 
 
 # lsb radix sort the mod 1 and mod 2 triples (may have empates)
 def radix_sort_triplets_with_ties(s12, s, n02, K):
     sorted_triplets = [0] * (n02 + 3)
     radix_pass(s12, sorted_triplets, s, 2, n02, K)
-    radix_pass(sorted_triplets, s12, s, 1, n02, K) #reuse memory
-    radix_pass(s12, sorted_triplets, s, 0, n02, K) #reuse memory
+    radix_pass(sorted_triplets, s12, s, 1, n02, K)  # reuse memory
+    radix_pass(s12, sorted_triplets, s, 0, n02, K)  # reuse memory
     return sorted_triplets
 
 
@@ -72,11 +73,11 @@ def generate_suffix_array(s, SA, N, K):
     previous_triplet = (-1, -1, -1)
     for i in range(n02):
         pos = sorted_triplets[i]
-        new_triplet = s[pos:pos+3]
+        new_triplet = s[pos:pos + 3]
         if new_triplet != previous_triplet:
             ranking += 1
             previous_triplet = new_triplet
- 
+
         if sorted_triplets[i] % 3 == 1:
             # left half
             rankings[sorted_triplets[i] // 3] = ranking
@@ -88,7 +89,7 @@ def generate_suffix_array(s, SA, N, K):
 
     # recurse if rankings are not yet unique
     if ranking < n02:
-        #ranking is the new  alphabet size since each triplet is new letter
+        # ranking is the new  alphabet size since each triplet is new letter
         generate_suffix_array(rankings, SA12, n02, ranking)
         # store unique ranking in rankings using the suffix array
         for i in range(n02):
@@ -102,7 +103,7 @@ def generate_suffix_array(s, SA, N, K):
 
     s0 = [0] * n0
     SA0 = [0] * n0
-    # Generate array of positions of mod0 triplets 
+    # Generate array of positions of mod0 triplets
     # lsb radix sorted by second and third characters
     # this is because we already know how to sort suffixes which are mod1 or mod2
     j = 0
@@ -112,14 +113,14 @@ def generate_suffix_array(s, SA, N, K):
             j += 1
 
     # stably sort the mod 0 suffixes from SA12 by their first character
-    # since we know how to sort mod1 and mod2, 
-    # i only need to sort the last character 
+    # since we know how to sort mod1 and mod2,
+    # i only need to sort the last character
     # of the triplet (always remember it's lsb)
     radix_pass(s0, SA0, s, 0, n0, K)
 
     # merge sorted SA0 suffixes and sorted SA12 suffixes
     p = 0
-    t = n0 - n1 # = 0 or 1
+    t = n0 - n1  # = 0 or 1
     k = 0
     while k < N:
         def get_i():
@@ -139,21 +140,22 @@ def generate_suffix_array(s, SA, N, K):
             print('s', s)
             print('K', K)
             """
-            
-        
-        
+
         j = SA0[p]  # pos of current offset 0 suffix
 
         # check which suffix is smaller
         is_mod_1 = SA12[t] < n0
-        
+
         # lefthand of <= operator
         second_char_lhand = 0 if is_mod_1 else s[i + 1]
         second_char_rhand = 0 if is_mod_1 else s[j + 1]
-        third_char_lhand = rankings[SA12[t] + n0] if is_mod_1 else rankings[SA12[t] - n0 + 1]
-        third_char_rhand = rankings[j // 3] if is_mod_1 else rankings[j // 3 + n0]
+        third_char_lhand = rankings[SA12[t] +
+                                    n0] if is_mod_1 else rankings[SA12[t] - n0 + 1]
+        third_char_rhand = rankings[j //
+                                    3] if is_mod_1 else rankings[j // 3 + n0]
         is_suffix_from_SA12_smaller = \
-            (s[i], second_char_lhand, third_char_lhand) <= (s[j], second_char_rhand, third_char_rhand)
+            (s[i], second_char_lhand, third_char_lhand) <= (
+                s[j], second_char_rhand, third_char_rhand)
 
         # merge step
         if is_suffix_from_SA12_smaller:
@@ -203,6 +205,7 @@ def naively_suffix_array(source):
 
     return suffixArray
 
+
 def suffix_array(text):
     alphabet = sorted(list(set(text)))
     c_to_i = {char: pos for pos, char in enumerate(alphabet, 1)}
@@ -212,7 +215,6 @@ def suffix_array(text):
     SA = [0 for _ in text]
     generate_suffix_array(s, SA, N, K)
     return SA
-    
 
 
 if __name__ == '__main__':
@@ -227,7 +229,7 @@ if __name__ == '__main__':
 
     for test in cases:
         print()
-        print(test)  
+        print(test)
 
         naive_sa = naively_suffix_array(test)[1:]
         SA = suffix_array(test)
@@ -241,13 +243,14 @@ if __name__ == '__main__':
             if (file != '.DS_Store'):
                 path = '../texts/' + file
                 size = getsize(path)
-                f = open(path,'r')
+                f = open(path, 'r')
                 text = f.read()
                 f.close()
+
                 def local():
                     SA = suffix_array(text)
                 num = 1
-                time = timeit(local, number=num) 
+                time = timeit(local, number=num)
                 filesToPrint.append([file, str(size), time / num])
                 # print(file, size, time / num)
         maxNameLength = len(max(filesToPrint, key=lambda x: len(x[0]))[0])
@@ -255,12 +258,14 @@ if __name__ == '__main__':
         for file in filesToPrint:
             charsToAdd1 = maxNameLength - len(file[0])
             charsToAdd2 = maxSizeLength - len(file[0])
-            print(file[0] + ' ' * charsToAdd1, file[1] + ' ' * charsToAdd2, file[2])
-        f = open('../texts/bible.txt','r')
-        text = f.read()
-        f.close()
-        def local2():
-            SA = naively_suffix_array(text)
-        time = timeit(local2, number=1) 
-        print('bible naive', time)
-        
+            print(file[0] + ' ' * charsToAdd1,
+                  file[1] + ' ' * charsToAdd2, file[2])
+        for file in filesToPrint:
+            print(file[0], ',', file[1], ',', file[2])
+        # f = open('../texts/bible.txt','r')
+        # text = f.read()
+        # f.close()
+        # def local2():
+        #     SA = naively_suffix_array(text)
+        # time = timeit(local2, number=1)
+        # print('bible naive', time)

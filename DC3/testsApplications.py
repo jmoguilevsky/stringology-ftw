@@ -17,19 +17,14 @@ class TestApplications(unittest.TestCase):
         # names = ['God', 'Moses', 'Zam', 'zum']
         def searcher(name):
             def local():
-                findAllOccurrences(text, SA, name)
-                # print(name, len(findAllOccurrences(text, SA, name)))
+                left, right = findAllOccurrences(text, SA, name)
+                print(name, right - left)
             return local
-        funs = []
-        for n in names:
-            f = searcher(n)
-            # print('occurrences', n, f())
-            times = 1000
-            time = timeit(f, number=times)
-            print(n, time/times)
 
-        # for f in funs:
-        #     print(f)
+        for n in names:
+            times = 1
+            time = timeit(searcher(n), number=times)
+            print(n, time/times)
 
         self.assertTrue(True)
 
