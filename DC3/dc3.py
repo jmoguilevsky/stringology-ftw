@@ -260,8 +260,6 @@ if __name__ == '__main__':
             charsToAdd2 = maxSizeLength - len(file[0])
             print(file[0] + ' ' * charsToAdd1,
                   file[1] + ' ' * charsToAdd2, file[2])
-        for file in filesToPrint:
-            print(file[0], ',', file[1], ',', file[2])
         # f = open('../texts/bible.txt','r')
         # text = f.read()
         # f.close()
