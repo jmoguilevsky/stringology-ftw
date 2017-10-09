@@ -13,15 +13,26 @@ class TestApplications(unittest.TestCase):
         text = f.read()
         f.close()
         SA = suffix_array(text)
-        occur = findAllOccurrences(text, SA, 'Jesus')
-        for oc in occur:
-            print()
-            print(text[oc - 50: oc + 50])
-            print()
-        # def local2():
-        # time = timeit(local2, number=1)
-        # print('all occurrences', time)
+        names = ['God', 'Jesus', 'Peter', 'Moses', ' and ', 'Leah', 'ASDG']
+
+        def searcher(name):
+            def local():
+                findAllOccurrences(text, SA, name)
+                # print(name, len(findAllOccurrences(text, SA, name)))
+            return local
+        funs = []
+        for n in names:
+            f = searcher(n)
+            # print('occurrences', n, f())
+            times = 1000
+            time = timeit(f, number=times)
+            print(n, time/times)
+
+        # for f in funs:
+        #     print(f)
+
         self.assertTrue(True)
+
 
 if __name__ == '__main__':
     unittest.main()
