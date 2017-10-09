@@ -14,7 +14,7 @@ class TestApplications(unittest.TestCase):
         f.close()
         SA = suffix_array(text)
         names = ['God', 'Jesus', 'Peter', 'Moses', ' and ', 'Leah', 'ASDG']
-
+        # names = ['God', 'Moses', 'Zam', 'zum']
         def searcher(name):
             def local():
                 findAllOccurrences(text, SA, name)

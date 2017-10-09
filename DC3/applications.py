@@ -1,6 +1,5 @@
 def compare(s, pattern, startingPos, textLength, patternLength):
     i = 0
-    patternLength = patternLength
     # print('comparing:', s[startingPos + i], pattern[i])
     # print('length', patternLength)
     while (i < patternLength and startingPos + i < textLength  and s[startingPos + i] == pattern[i]):
@@ -15,22 +14,24 @@ def recursiveSearch(s, SA, pattern, startingPos, endingPos, leftSide, textLength
     original = endingPos if leftSide else startingPos
     # if leftSide:
         # print('recurse', 'original', original, 'startingPos', startingPos, 'endingPos', endingPos)
-
+    times = 0
     while startingPos <= endingPos:
+        times += 1
         # if leftSide:
             # print('recurse 2', 'original', original, 'startingPos', startingPos, 'endingPos', endingPos)
         midpoint = (startingPos + endingPos) // 2
         comp = compare(s, pattern, SA[midpoint], textLength, patternLength)
         if (comp == 0):
             if (leftSide):
-                endingPos -= 1
+                endingPos = midpoint - 1
             else:
-                startingPos += 1
+                startingPos = midpoint + 1
         elif (comp > 0):
             endingPos = midpoint - 1
         else:
             startingPos = midpoint + 1
 
+    # print('recursed', times)
     return original - endingPos if leftSide else startingPos - original
 
 
