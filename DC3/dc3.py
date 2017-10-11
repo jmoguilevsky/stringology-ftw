@@ -236,12 +236,13 @@ if __name__ == '__main__':
         print('✅' if naive_sa == SA else '❌', naive_sa, SA)
         print()
     if (testFiles):
-        path = '../texts'
+        path = '../texts6'
         files = [f for f in listdir(path) if isfile(join(path, f))]
         filesToPrint = []
         for file in files:
+            print(file)
             if (file != '.DS_Store'):
-                path = '../texts/' + file
+                path = '../texts6/' + file
                 size = getsize(path)
                 f = open(path, 'r')
                 text = f.read()
@@ -249,9 +250,10 @@ if __name__ == '__main__':
 
                 def local():
                     SA = suffix_array(text)
-                num = 1
+                num = 10
                 time = timeit(local, number=num)
                 filesToPrint.append([file, str(size), time / num])
+                print('termino ', file)
                 # print(file, size, time / num)
         maxNameLength = len(max(filesToPrint, key=lambda x: len(x[0]))[0])
         maxSizeLength = len(max(filesToPrint, key=lambda x: len(x[1]))[1])

@@ -18,11 +18,11 @@ class TestApplications(unittest.TestCase):
         def searcher(name):
             def local():
                 left, right = findAllOccurrences(text, SA, name)
-                print(name, right - left)
+                # print(name, right - left)
             return local
 
         for n in names:
-            times = 1
+            times = 10000
             time = timeit(searcher(n), number=times)
             print(n, time/times)
 

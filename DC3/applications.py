@@ -1,3 +1,5 @@
+from dc3 import suffix_array
+
 def compare(s, pattern, startingPos, textLength, patternLength):
     i = 0
     # print('comparing:', s[startingPos + i], pattern[i])
@@ -68,6 +70,12 @@ def main():
     strings = ['na', 'a', 'ana', 'bana', 'ban', 'baa', '$']
     s = 'banana'
     SA = [5, 3, 1, 0, 4, 2]
+    for pattern in strings:
+        res = findAllOccurrences(s, SA, pattern)
+        print(pattern, res)
+    strings = ['a', ]
+    s = 'yabbadabbado'
+    SA = suffix_array(s)
     for pattern in strings:
         res = findAllOccurrences(s, SA, pattern)
         print(pattern, res)
